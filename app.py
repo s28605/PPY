@@ -3,10 +3,11 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 import os
-from mongodb import init_app, find_user_by_id, find_user_by_username, insert_user, insert_film, find_films_by_user_id, find_film_by_id, delete_film
+from mongodb import init_app, find_user_by_id, find_user_by_username, insert_user, insert_film, find_films_by_user_id, \
+    find_film_by_id, delete_film
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://localhost:27017/film_db')
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/film_db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
@@ -15,6 +16,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+
 @login_manager.user_loader
 def load_user(user_id):
     user = find_user_by_id(user_id)
@@ -22,10 +24,12 @@ def load_user(user_id):
         return User(user)
     return None
 
+
 class User(UserMixin):
     def __init__(self, user):
         self.id = str(user['_id'])
         self.username = user['username']
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -42,6 +46,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -56,17 +61,20 @@ def login():
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html')
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
 @app.route('/')
 @login_required
 def index():
     films = find_films_by_user_id(current_user.get_id())
     return render_template('index.html', films=films)
+
 
 @app.route('/add_film', methods=['GET', 'POST'])
 @login_required
@@ -83,6 +91,7 @@ def add_film():
             return redirect(url_for('index'))
     return render_template('add_film.html')
 
+
 @app.route('/delete_film/<film_id>', methods=['POST'])
 @login_required
 def delete_film_route(film_id):
@@ -96,5 +105,6 @@ def delete_film_route(film_id):
         flash('You do not have permission to delete this film.', 'danger')
     return redirect(url_for('index'))
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5012, debug=True)
+    app.run(debug=True)
