@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Film List</title>
+</head>
+<body>
+    <h2>Film List</h2>
+    <a href="{{ url_for('add_film') }}">Add New Film</a>
+    <ul>
+        {% for film in films %}
+            <li>
+                <img src="{{ url_for('static', filename='uploads/' + film['image']) }}" width="100" />
+                <strong>{{ film['title'] }}</strong>: {{ film['opinion'] }}
+                <form method="post" action="{{ url_for('delete_film_route', film_id=film['_id']) }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
